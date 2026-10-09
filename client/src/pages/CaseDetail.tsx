@@ -76,7 +76,7 @@ export function CaseDetailPage() {
   return (
     <CaseContext.Provider value={ctx}>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl bg-slate-950 bg-[radial-gradient(90%_120%_at_0%_0%,rgba(99,102,241,0.35),transparent_60%)] p-4 text-white shadow-sm sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl bg-[#020617] bg-[radial-gradient(90%_120%_at_0%_0%,rgba(99,102,241,0.35),transparent_60%)] p-4 text-white shadow-sm sm:p-6">
           <div className="min-w-0">
             <Link to={`/customers/${c.customer.id}`} className="text-sm font-medium text-indigo-300 hover:text-white hover:underline">
               {c.customer.name}
@@ -101,7 +101,7 @@ export function CaseDetailPage() {
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/15" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={() => analyze.mutate(true)} disabled={analyze.isPending || b.sources.length === 0}>
               {t('case.reanalyze')}
             </Button>
-            <Button className="!bg-white !text-slate-900 hover:!bg-slate-100" icon={<Sparkles className="h-4 w-4" />} loading={analyze.isPending} onClick={() => analyze.mutate(false)} disabled={b.sources.length === 0}>
+            <Button className="!bg-[#fff] !text-[#0f172a] hover:!bg-[#f1f5f9]" icon={<Sparkles className="h-4 w-4" />} loading={analyze.isPending} onClick={() => analyze.mutate(false)} disabled={b.sources.length === 0}>
               {analyze.isPending ? t('case.analyzing') : t('case.analyze')}
             </Button>
           </div>

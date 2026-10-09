@@ -31,6 +31,9 @@ const az: Dict = {
     serverDown: 'Serverə qoşulmaq mümkün olmadı. Backend-in işlədiyini yoxlayın (npm run dev).',
     juryTitle: 'Münsiflər üçün giriş', juryFill: 'Məlumatları doldur',
   },
+  theme: {
+    dark: 'Qaranlıq rejim', light: 'İşıqlı rejim',
+  },
   dashboard: {
     title: 'İdarə paneli', subtitle: 'Bütün göstəricilər verilənlər bazasından hesablanır.',
     openCases: 'Açıq işlər', openContradictions: 'Açıq ziddiyyətlər', unresolvedBlockers: 'Həll olunmamış maneələr',
@@ -252,6 +255,9 @@ const en: Dict = {
     rateLimited: 'Too many attempts. Try again later.',
     serverDown: 'Could not reach the server. Make sure the backend is running (npm run dev).',
     juryTitle: 'Jury sign-in', juryFill: 'Fill in the details',
+  },
+  theme: {
+    dark: 'Dark mode', light: 'Light mode',
   },
   dashboard: {
     title: 'Dashboard', subtitle: 'All numbers are computed from the database.', openCases: 'Open cases', openContradictions: 'Open contradictions',

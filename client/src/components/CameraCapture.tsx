@@ -82,7 +82,7 @@ export function CameraCapture({ onCapture }: { onCapture: (photo: Blob) => void 
   if (preview) {
     return (
       <div className="space-y-2">
-        <img src={preview} alt={t('camera.preview')} className="max-h-80 w-full rounded-lg border border-slate-200 bg-slate-900 object-contain" />
+        <img src={preview} alt={t('camera.preview')} className="max-h-80 w-full rounded-lg border border-slate-200 bg-black object-contain" />
         <Button size="sm" variant="secondary" icon={<RotateCcw className="h-3.5 w-3.5" />} onClick={() => setPreview(null)}>
           {t('camera.retake')}
         </Button>
@@ -93,7 +93,7 @@ export function CameraCapture({ onCapture }: { onCapture: (photo: Blob) => void 
   return (
     <div className="space-y-2">
       {live !== 'off' && (
-        <div className="relative overflow-hidden rounded-lg bg-slate-900">
+        <div className="relative overflow-hidden rounded-lg bg-black">
           <video ref={videoRef} playsInline muted className="aspect-[4/3] w-full object-cover" />
           {live === 'starting' && <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-300">{t('camera.starting')}</div>}
           {live === 'on' && <div className="pointer-events-none absolute inset-4 rounded-md border-2 border-dashed border-white/40" aria-hidden />}

@@ -6,7 +6,7 @@ import { api, ApiError } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import type { ExitMessage } from '../lib/types';
 import { Alert, Button, Spinner, Textarea, cx, errorMessage } from '../components/ui';
-import { Brand, LanguageSwitch } from '../components/Layout';
+import { Brand, LanguageSwitch, ThemeSwitch } from '../components/Layout';
 
 interface PortalData {
   purpose: 'CONFIRMATION' | 'EXIT';
@@ -27,7 +27,10 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
           {/* The customer only has access to this page, so the logo leads back to its top. */}
           <Brand to={pathname} light />
-          <LanguageSwitch />
+          <div className="flex items-center gap-1.5">
+            <ThemeSwitch />
+            <LanguageSwitch />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-2xl px-4 py-6">{children}</main>

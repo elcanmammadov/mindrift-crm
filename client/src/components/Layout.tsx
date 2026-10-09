@@ -1,10 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftRight, BarChart3, ClipboardList, LayoutDashboard, LogOut, Menu, PlugZap, Settings, Sparkles, Users, X } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, ClipboardList, LayoutDashboard, LogOut, Menu, Moon, PlugZap, Settings, Sparkles, Sun, Users, X } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useI18n, type Locale } from '../lib/i18n';
+import { useTheme } from '../lib/theme';
 import { Badge, cx } from './ui';
 
 export interface AppSettings {
@@ -34,13 +35,35 @@ export function LanguageSwitch({ className, dark }: { className?: string; dark?:
           onClick={() => setLocale(l)}
           className={cx(
             'rounded-md px-2.5 py-1 font-semibold uppercase transition-colors',
-            locale === l ? (dark ? 'bg-white text-slate-900' : 'bg-indigo-600 text-white') : dark ? 'text-slate-300 hover:text-white' : 'text-slate-500 hover:text-slate-900',
+            locale === l ? (dark ? 'bg-[#fff] text-[#0f172a]' : 'bg-indigo-600 text-white') : dark ? 'text-[#cbd5e1] hover:text-white' : 'text-slate-500 hover:text-slate-900',
           )}
         >
           {l}
         </button>
       ))}
     </div>
+  );
+}
+
+/** Light / dark theme toggle (sits next to the language switch). */
+export function ThemeSwitch({ className, dark }: { className?: string; dark?: boolean }) {
+  const { t } = useI18n();
+  const { theme, toggle } = useTheme();
+  const next = theme === 'dark' ? t('theme.light') : t('theme.dark');
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={next}
+      title={next}
+      className={cx(
+        'inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg transition-colors',
+        dark ? 'bg-white/10 text-[#cbd5e1] ring-1 ring-white/10 hover:text-white' : 'border border-slate-200 bg-white text-slate-600 shadow-sm hover:text-slate-900',
+        className,
+      )}
+    >
+      {theme === 'dark' ? <Sun className="h-4 w-4" aria-hidden /> : <Moon className="h-4 w-4" aria-hidden />}
+    </button>
   );
 }
 
@@ -69,7 +92,7 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
     { to: '/handovers', label: t('nav.handovers'), icon: <ArrowLeftRight className="h-[18px] w-[18px]" />, color: 'text-rose-400' },
     { to: '/insights', label: t('nav.insights'), icon: <BarChart3 className="h-[18px] w-[18px]" />, color: 'text-violet-400' },
     { to: '/integrations', label: t('nav.integrations'), icon: <PlugZap className="h-[18px] w-[18px]" />, color: 'text-emerald-400', count: newMessages },
-    { to: '/settings', label: t('nav.settings'), icon: <Settings className="h-[18px] w-[18px]" />, color: 'text-slate-400' },
+    { to: '/settings', label: t('nav.settings'), icon: <Settings className="h-[18px] w-[18px]" />, color: 'text-[#94a3b8]' },
   ];
   return (
     <nav className="flex flex-col gap-0.5">
@@ -82,14 +105,14 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
           className={({ isActive }) =>
             cx(
               'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-              isActive ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white',
+              isActive ? 'bg-white/10 text-white' : 'text-[#94a3b8] hover:bg-white/5 hover:text-white',
             )
           }
         >
           {({ isActive }) => (
             <>
               {isActive && <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-indigo-400" aria-hidden />}
-              <span className={cx('shrink-0 transition-colors', isActive ? i.color : 'text-slate-500 group-hover:text-slate-300')}>{i.icon}</span>
+              <span className={cx('shrink-0 transition-colors', isActive ? i.color : 'text-[#64748b] group-hover:text-[#cbd5e1]')}>{i.icon}</span>
               {i.label}
               {!!i.count && (
                 <span className="ml-auto rounded-full bg-emerald-500 px-1.5 py-px text-xs font-semibold text-white" aria-label={t('integrations.newCount', { n: i.count })}>
@@ -123,7 +146,7 @@ export function Brand({ to = '/', onClick, light }: { to?: string; onClick?: () 
   );
 }
 
-const sidebarBg = 'bg-slate-950 bg-[radial-gradient(120%_60%_at_0%_0%,rgba(99,102,241,0.25),transparent_60%)]';
+const sidebarBg = 'bg-[#020617] bg-[radial-gradient(120%_60%_at_0%_0%,rgba(99,102,241,0.25),transparent_60%)]';
 
 export function Layout() {
   const { user, logout } = useAuth();
@@ -158,10 +181,10 @@ export function Layout() {
         </span>
         <div className="min-w-0">
           <div className="truncate text-sm font-medium text-white">{user.name}</div>
-          <div className="truncate text-xs text-slate-400">{te('settings.roles', user.role)}</div>
+          <div className="truncate text-xs text-[#94a3b8]">{te('settings.roles', user.role)}</div>
         </div>
       </div>
-      <button type="button" onClick={doLogout} className="shrink-0 rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-white" aria-label={t('common.logout')} title={t('common.logout')}>
+      <button type="button" onClick={doLogout} className="shrink-0 rounded-md p-2 text-[#94a3b8] hover:bg-white/10 hover:text-white" aria-label={t('common.logout')} title={t('common.logout')}>
         <LogOut className="h-4 w-4" />
       </button>
     </div>
@@ -177,7 +200,10 @@ export function Layout() {
         <div className="mt-auto space-y-4 px-2">
           <div className="flex items-center justify-between gap-2">
             <ModeBadge />
-            <LanguageSwitch dark />
+            <div className="flex items-center gap-1.5">
+              <ThemeSwitch dark />
+              <LanguageSwitch dark />
+            </div>
           </div>
           {userBox}
         </div>
@@ -187,6 +213,7 @@ export function Layout() {
         <Brand light />
         <div className="flex items-center gap-1.5">
           <ModeBadge />
+          <ThemeSwitch />
           <button
             type="button"
             className="rounded-md p-2 text-slate-600 hover:bg-slate-100"
@@ -200,17 +227,20 @@ export function Layout() {
       </header>
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label={t('nav.menu')}>
-          <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
           <div className={cx('absolute inset-y-0 left-0 flex w-[min(18rem,85vw)] flex-col gap-6 overflow-y-auto p-4 shadow-2xl', sidebarBg)}>
             <div className="flex items-center justify-between">
               <Brand onClick={() => setOpen(false)} />
-              <button type="button" className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-white" onClick={() => setOpen(false)} aria-label={t('common.close')}>
+              <button type="button" className="rounded-md p-2 text-[#94a3b8] hover:bg-white/10 hover:text-white" onClick={() => setOpen(false)} aria-label={t('common.close')}>
                 <X className="h-5 w-5" />
               </button>
             </div>
             <NavItems onNavigate={() => setOpen(false)} />
             <div className="mt-auto space-y-4">
-              <LanguageSwitch dark />
+              <div className="flex items-center gap-1.5">
+                <ThemeSwitch dark />
+                <LanguageSwitch dark />
+              </div>
               {userBox}
             </div>
           </div>

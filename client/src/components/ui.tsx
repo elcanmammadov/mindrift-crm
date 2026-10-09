@@ -23,11 +23,11 @@ export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Bool
 // ---------------------------------------------------------------- Button
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
 const variants: Record<Variant, string> = {
-  primary: 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50',
+  primary: 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-500 active:bg-indigo-600 disabled:opacity-50',
   secondary: 'bg-white text-slate-700 border border-slate-300 shadow-sm hover:bg-slate-50 hover:text-slate-900 disabled:text-slate-400',
   ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:text-slate-400',
-  danger: 'bg-red-600 text-white shadow-sm hover:bg-red-700 disabled:opacity-50',
-  success: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50',
+  danger: 'bg-red-600 text-white shadow-sm hover:bg-red-500 disabled:opacity-50',
+  success: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50',
 };
 
 export const Button = forwardRef<
@@ -298,7 +298,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               'pointer-events-auto w-full max-w-md rounded-lg px-4 py-2.5 text-sm shadow-lg sm:w-auto',
               i.tone === 'success' && 'bg-emerald-600 text-white',
               i.tone === 'danger' && 'bg-red-600 text-white',
-              i.tone === 'info' && 'bg-slate-900 text-white',
+              i.tone === 'info' && 'bg-[#0f172a] text-white ring-1 ring-white/10',
             )}
           >
             {i.text}

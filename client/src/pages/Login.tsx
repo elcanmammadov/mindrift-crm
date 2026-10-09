@@ -4,7 +4,7 @@ import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { ApiError } from '../lib/api';
 import { Alert, Button, Field, Input } from '../components/ui';
-import { Brand, LanguageSwitch } from '../components/Layout';
+import { Brand, LanguageSwitch, ThemeSwitch } from '../components/Layout';
 import { Award, LogIn } from 'lucide-react';
 
 // Competition jury account (an admin); shown on purpose so the jury can sign in with one click.
@@ -42,7 +42,7 @@ export function LoginPage() {
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <aside className="relative hidden overflow-hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
+      <aside className="relative hidden overflow-hidden bg-[#020617] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_0%_0%,rgba(99,102,241,0.35),transparent_60%),radial-gradient(60%_50%_at_100%_100%,rgba(236,72,153,0.18),transparent_60%)]" aria-hidden />
         <div className="relative">
           <Brand to="/login" />
@@ -50,7 +50,7 @@ export function LoginPage() {
         <div className="relative max-w-md">
           <p className="text-2xl font-semibold leading-snug tracking-tight xl:text-3xl">{t('app.tagline')}</p>
         </div>
-        <p className="relative text-xs text-slate-500">© {new Date().getFullYear()} Mindrift</p>
+        <p className="relative text-xs text-[#64748b]">© {new Date().getFullYear()} Mindrift</p>
       </aside>
 
       <main className="flex flex-col px-4 py-6 sm:px-8 sm:py-10">
@@ -58,7 +58,10 @@ export function LoginPage() {
           <div className="lg:invisible">
             <Brand to="/login" light />
           </div>
-          <LanguageSwitch />
+          <div className="flex items-center gap-1.5">
+            <ThemeSwitch />
+            <LanguageSwitch />
+          </div>
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('login.title')}</h1>

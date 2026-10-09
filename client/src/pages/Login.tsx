@@ -5,6 +5,10 @@ import { useI18n } from '../lib/i18n';
 import { ApiError } from '../lib/api';
 import { Alert, Button, Field, Input } from '../components/ui';
 import { Brand, LanguageSwitch } from '../components/Layout';
+import { Award, LogIn } from 'lucide-react';
+
+// Competition jury account (an admin); shown on purpose so the jury can sign in with one click.
+const JURY = { email: 'mindrift@gmail.az', password: 'mindrift2026' };
 
 
 export function LoginPage() {
@@ -59,6 +63,29 @@ export function LoginPage() {
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('login.title')}</h1>
           <p className="mt-2 text-sm text-slate-500 lg:hidden">{t('app.tagline')}</p>
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+              <Award className="h-4 w-4" aria-hidden /> {t('login.juryTitle')}
+            </div>
+            <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
+              <dt className="text-amber-800/80">{t('login.email')}:</dt>
+              <dd className="select-all break-all font-mono font-medium text-slate-900">{JURY.email}</dd>
+              <dt className="text-amber-800/80">{t('login.password')}:</dt>
+              <dd className="select-all font-mono font-medium text-slate-900">{JURY.password}</dd>
+            </dl>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="mt-3"
+              icon={<LogIn className="h-3.5 w-3.5" />}
+              onClick={() => {
+                setEmail(JURY.email);
+                setPassword(JURY.password);
+              }}
+            >
+              {t('login.juryFill')}
+            </Button>
+          </div>
           <form onSubmit={submit} className="mt-8 space-y-4" noValidate>
             {error && <Alert tone="danger">{error}</Alert>}
             <Field label={t('login.email')} required>

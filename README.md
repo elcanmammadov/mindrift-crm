@@ -62,6 +62,8 @@ Ayrı-ayrı əmrlər:
 | nihat@mindrift.az | Agent (Nihat Zəkiyev) | Bakı Retail satışı; təhvili verir; itirilmiş satış (Gəncə Mebel) |
 | ataxan@mindrift.az | Agent (Ataxan Hacızadə) | Təhvili qəbul edir; dəstək işləri |
 
+**Münsiflər üçün:** `mindrift@gmail.az` / `mindrift2026` (admin; giriş səhifəsində göstərilir).
+
 ---
 
 ## 3. Real AI və demo rejimi

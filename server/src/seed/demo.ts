@@ -13,6 +13,9 @@ import type { HandoverPackage } from '../analysis/schemas.js';
 
 const SYSTEM = { type: 'SYSTEM' as const, name: 'demo seed' };
 export const DEMO_PASSWORD = 'admin1234';
+/** Jury account for the competition; its credentials are shown on the login page on purpose. */
+export const JURY_EMAIL = 'mindrift@gmail.az';
+export const JURY_PASSWORD = 'mindrift2026';
 const day = 864e5;
 const at = (iso: string) => new Date(iso);
 
@@ -45,6 +48,12 @@ export async function seedDemo() {
   const upsertUser = (email: string, name: string, role: string) =>
     prisma.user.upsert({ where: { email }, create: { email, name, role, passwordHash: pw }, update: { name, role, passwordHash: pw } });
   const admin = await upsertUser('elcan@mindrift.az', 'Elcan Məmmədov', 'ADMIN');
+  const juryPw = await hashPassword(JURY_PASSWORD);
+  await prisma.user.upsert({
+    where: { email: JURY_EMAIL },
+    create: { email: JURY_EMAIL, name: 'Münsiflər heyəti', role: 'ADMIN', passwordHash: juryPw },
+    update: { name: 'Münsiflər heyəti', role: 'ADMIN', passwordHash: juryPw },
+  });
   const nihat = await upsertUser('nihat@mindrift.az', 'Nihat Zəkiyev', 'AGENT');
   const ataxan = await upsertUser('ataxan@mindrift.az', 'Ataxan Hacızadə', 'AGENT');
 

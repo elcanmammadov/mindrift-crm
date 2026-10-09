@@ -29,6 +29,7 @@ const az: Dict = {
     title: 'Daxil olun', email: 'E-poçt', password: 'Şifrə', submit: 'Daxil ol', invalid: 'E-poçt və ya şifrə yanlışdır.',
     rateLimited: 'Çox sayda cəhd. Bir az sonra yenidən yoxlayın.',
     serverDown: 'Serverə qoşulmaq mümkün olmadı. Backend-in işlədiyini yoxlayın (npm run dev).',
+    juryTitle: 'Münsiflər üçün giriş', juryFill: 'Məlumatları doldur',
   },
   dashboard: {
     title: 'İdarə paneli', subtitle: 'Bütün göstəricilər verilənlər bazasından hesablanır.',
@@ -250,6 +251,7 @@ const en: Dict = {
     title: 'Sign in', email: 'Email', password: 'Password', submit: 'Sign in', invalid: 'Invalid email or password.',
     rateLimited: 'Too many attempts. Try again later.',
     serverDown: 'Could not reach the server. Make sure the backend is running (npm run dev).',
+    juryTitle: 'Jury sign-in', juryFill: 'Fill in the details',
   },
   dashboard: {
     title: 'Dashboard', subtitle: 'All numbers are computed from the database.', openCases: 'Open cases', openContradictions: 'Open contradictions',

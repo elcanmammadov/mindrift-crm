@@ -12,7 +12,8 @@ const EnvSchema = z.object({
     .optional()
     .transform((v) => (v ?? 'true').toLowerCase() !== 'false'),
   PORT: z.coerce.number().int().positive().default(4000),
-  FRONTEND_URL: z.string().default('http://localhost:5173'),
+  // Render provides the public https URL of the service (used for customer links).
+  FRONTEND_URL: z.string().default(process.env.RENDER_EXTERNAL_URL ?? 'http://localhost:5173'),
   COOKIE_SECURE: z
     .string()
     .optional()

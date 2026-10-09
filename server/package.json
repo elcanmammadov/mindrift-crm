@@ -14,7 +14,8 @@
     "db:reset": "prisma migrate reset --force",
     "test": "vitest run",
     "test:live-ai": "tsx scripts/live-ai-check.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:seed-if-empty": "tsx prisma/seed-if-empty.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

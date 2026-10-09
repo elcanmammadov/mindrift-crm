@@ -1,0 +1,28 @@
+# Render Blueprint: one web service serves both the API and the built React app.
+services:
+  - type: web
+    name: mindrift-crm
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.15.1
+      - key: NODE_ENV
+        value: production
+      # SQLite file next to the Prisma schema. On the free plan the disk is reset on every deploy/restart,
+      # and the start command re-creates the sample data on an empty database.
+      - key: DATABASE_URL
+        value: file:./prod.db
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DEMO_MODE
+        value: "false"
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-5-5
+      # Entered in the Render dashboard; never committed.
+      - key: ANTHROPIC_API_KEY
+        sync: false

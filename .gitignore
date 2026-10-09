@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.db
+*.db-journal
+.env
+server/.env
+server/uploads/
+coverage/
+.DS_Store
+client/public/tesseract/
+*.db.bak*

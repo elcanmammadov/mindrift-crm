@@ -1,0 +1,34 @@
+{
+  "name": "mindrift-crm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mindrift CRM — AI-assisted CRM that tracks customer need, company promises and real outcome on one Customer Case.",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "setup": "node scripts/setup-env.mjs && npm install && npm run db:deploy && npm run db:seed",
+    "dev": "concurrently -n server,client -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "db:migrate": "npm run db:migrate -w server",
+    "db:seed": "npm run db:seed -w server",
+    "db:reset": "npm run db:reset -w server",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
+    "test": "npm run test -w server",
+    "test:live-ai": "npm run test:live-ai -w server",
+    "build": "npm run build -w server && npm run build -w client",
+    "start": "npm run start -w server",
+    "db:deploy": "npm run db:deploy -w server"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0"
+  },
+  "type": "module"
+}

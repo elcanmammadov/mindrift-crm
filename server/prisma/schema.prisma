@@ -1,0 +1,439 @@
+// Mindrift CRM data model.
+// SQLite has no native enums, so status-like fields are strings validated with Zod
+// (see src/domain/enums.ts for the allowed values).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         String // ADMIN | AGENT
+  createdAt    DateTime @default(now())
+
+  sessions         Session[]
+  ownedCases       CustomerCase[] @relation("CaseOwner")
+  blockers         Blocker[]      @relation("BlockerOwner")
+  tasks            Task[]         @relation("TaskAssignee")
+  handoversFrom    Handover[]     @relation("HandoverFrom")
+  handoversTo      Handover[]     @relation("HandoverTo")
+}
+
+model Session {
+  id        String   @id // sha256 of the cookie token
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Customer {
+  id           String   @id @default(cuid())
+  name         String
+  industry     String?
+  contactName  String?
+  contactEmail String?
+  phone        String?
+  status       String   @default("PROSPECT") // PROSPECT | ACTIVE | CHURNED
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cases             CustomerCase[]
+  exitConversations ExitConversation[]
+  consents          ContactConsent[]
+  auditEvents       AuditEvent[]
+}
+
+model CustomerCase {
+  id                  String    @id @default(cuid())
+  customerId          String
+  customer            Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title               String
+  initialRequest      String
+  coreNeed            String?
+  status              String    @default("NEW") // NEW | NEEDS_CLARIFICATION | SOLUTION_DESIGN | IN_PROGRESS | AWAITING_CONFIRMATION | CLOSED | REOPENED
+  salesOutcome        String    @default("OPEN") // OPEN | WON | LOST | NOT_APPLICABLE
+  ownerId             String?
+  owner               User?     @relation("CaseOwner", fields: [ownerId], references: [id])
+  sourcesRevision     Int       @default(0) // bumped on every source add/edit/delete
+  analyzedRevision    Int? // sourcesRevision at the time of the last successful analysis
+  closedAt            DateTime?
+  closeReason         String?
+  closedManually      Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  sources       Source[]
+  analysisRuns  AnalysisRun[]
+  findings      Finding[]
+  requirements  Requirement[]
+  commitments   Commitment[]
+  blockers      Blocker[]
+  tasks         Task[]
+  handovers     Handover[]
+  criteria      ResolutionCriterion[]
+  confirmations CustomerConfirmation[]
+  relationsFrom CaseRelation[] @relation("RelationFrom")
+  relationsTo   CaseRelation[] @relation("RelationTo")
+  lossAnalysis  LossAnalysis?
+  accessTokens  CustomerAccessToken[]
+  auditEvents   AuditEvent[]
+
+  @@index([customerId])
+  @@index([ownerId])
+}
+
+model Source {
+  id          String    @id @default(cuid())
+  caseId      String
+  case        CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type        String // EMAIL | WHATSAPP | CALL_NOTE | MEETING_NOTE | PROPOSAL | CONTRACT | SUPPORT_REPLY | INTERNAL_NOTE | DOCUMENT
+  origin      String    @default("MANUAL") // MANUAL | PASTE | UPLOAD_TXT | UPLOAD_PDF | DEMO_IMPORT
+  title       String
+  author      String
+  authorSide  String // CUSTOMER | COMPANY
+  occurredAt  DateTime
+  packageRef  String? // package / service this source refers to (e.g. "Start", "Biznes")
+  content     String
+  contentHash String
+  version     Int       @default(1)
+  deletedAt   DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  chunks    SourceChunk[]
+  revisions SourceRevision[]
+  evidence  Evidence[]
+
+  @@index([caseId])
+}
+
+model SourceRevision {
+  id          String   @id @default(cuid())
+  sourceId    String
+  source      Source   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  version     Int
+  content     String
+  contentHash String
+  editedById  String?
+  createdAt   DateTime @default(now())
+
+  @@unique([sourceId, version])
+}
+
+model SourceChunk {
+  id          String @id // stable: <sourceId>:v<version>:<index>
+  sourceId    String
+  source      Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  version     Int
+  index       Int
+  startOffset Int
+  endOffset   Int
+  text        String
+
+  @@index([sourceId, version])
+}
+
+model AnalysisRun {
+  id             String    @id @default(cuid())
+  caseId         String
+  case           CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  modules        String // JSON array of module ids
+  mode           String // REAL_AI | DEMO_PREPARED | RULES | MOCK
+  model          String?
+  status         String // RUNNING | SUCCEEDED | FAILED | SKIPPED_UNCHANGED
+  inputHash      String
+  sourceSnapshot String // JSON: [{sourceId, version, contentHash}]
+  truncated      Boolean   @default(false)
+  notes          String    @default("[]") // JSON array of warnings shown to the user
+  error          String?
+  stats          String    @default("{}") // JSON: created/updated/stale counts
+  triggeredById  String?
+  startedAt      DateTime  @default(now())
+  finishedAt     DateTime?
+
+  findings Finding[]
+
+  @@index([caseId])
+}
+
+model Finding {
+  id              String    @id @default(cuid())
+  caseId          String
+  case            CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  runId           String?
+  run             AnalysisRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  module          String // BRIDGE | ONEVOICE | UNBLOCK | RELAY | PROOFCLOSE | LOOP | WHYLOST | EXITLENS
+  kind            String
+  fingerprint     String
+  title           String
+  explanation     String
+  epistemic       String // OBSERVED | INFERRED
+  strength        String // STRONG | MEDIUM | WEAK
+  suggestedAction String?
+  reviewStatus    String    @default("PENDING") // PENDING | CONFIRMED | REJECTED | RESOLVED
+  reviewNote      String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  stale           Boolean   @default(false)
+  origin          String // REAL_AI | DEMO_PREPARED | RULES | MOCK
+  data            String    @default("{}") // JSON, module-specific payload
+  translations    String    @default("{}") // JSON: { en?: {title, explanation, suggestedAction} }
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  evidence Evidence[]
+
+  @@unique([caseId, fingerprint])
+  @@index([caseId, module])
+}
+
+model Evidence {
+  id            String  @id @default(cuid())
+  findingId     String
+  finding       Finding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  sourceId      String
+  source        Source  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceVersion Int
+  chunkId       String?
+  quote         String
+  startOffset   Int?
+  endOffset     Int?
+  verified      Boolean
+  label         String? // e.g. "A" / "B" for the two sides of a contradiction
+}
+
+model Requirement {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  kind      String // EXPLICIT_REQUEST | CORE_PROBLEM | SUCCESS_CRITERION | CONSTRAINT | OPEN_QUESTION
+  text      String
+  epistemic String // STATED | INFERRED
+  findingId String?
+  createdAt DateTime @default(now())
+}
+
+model Commitment {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  text      String
+  sourceId  String?
+  status    String   @default("ACTIVE") // ACTIVE | SUPERSEDED | DISPUTED
+  createdAt DateTime @default(now())
+}
+
+model Blocker {
+  id                 String    @id @default(cuid())
+  caseId             String
+  case               CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  category           String // BUDGET | TECH_FIT | DATA_MIGRATION | SECURITY | INTERNAL_APPROVAL | UNCLEAR_TERMS | UNANSWERED_QUESTION | OTHER
+  title              String
+  description        String?
+  ownerId            String?
+  owner              User?     @relation("BlockerOwner", fields: [ownerId], references: [id])
+  nextStep           String?
+  dueDate            DateTime?
+  resolutionCriteria String?
+  status             String    @default("OPEN") // OPEN | IN_PROGRESS | WAITING_CUSTOMER | RESOLVED
+  sourceId           String?
+  evidenceQuote      String?
+  findingId          String?   @unique
+  resolvedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  tasks Task[]
+
+  @@index([caseId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  caseId      String?
+  case        CustomerCase? @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  blockerId   String?
+  blocker     Blocker?  @relation(fields: [blockerId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  assigneeId  String?
+  assignee    User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  dueDate     DateTime?
+  status      String    @default("TODO") // TODO | IN_PROGRESS | DONE
+  origin      String    @default("MANUAL") // MANUAL | FINDING | ROOT_CAUSE | PROCESS_IMPROVEMENT
+  findingId   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([caseId])
+  @@index([assigneeId])
+}
+
+model Handover {
+  id          String    @id @default(cuid())
+  caseId      String
+  case        CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fromUserId  String?
+  fromUser    User?     @relation("HandoverFrom", fields: [fromUserId], references: [id])
+  toUserId    String
+  toUser      User      @relation("HandoverTo", fields: [toUserId], references: [id])
+  packageJson String // editable handover package
+  origin      String // REAL_AI | DEMO_PREPARED | RULES | MOCK
+  status      String    @default("PENDING") // PENDING | ACCEPTED
+  createdAt   DateTime  @default(now())
+  acceptedAt  DateTime?
+
+  @@index([caseId])
+}
+
+model ResolutionCriterion {
+  id                           String   @id @default(cuid())
+  caseId                       String
+  case                         CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  description                  String
+  evidenceRequired             String
+  requiresCustomerConfirmation Boolean  @default(false)
+  status                       String   @default("PENDING") // PENDING | MET | NOT_MET
+  evidenceNote                 String?
+  createdAt                    DateTime @default(now())
+}
+
+model CustomerConfirmation {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tokenId   String?
+  outcome   String // RESOLVED | PROBLEM_REMAINS
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model CustomerAccessToken {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  caseId      String
+  case        CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  purpose     String // CONFIRMATION | EXIT
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+}
+
+model CaseRelation {
+  id            String   @id @default(cuid())
+  caseId        String
+  case          CustomerCase @relation("RelationFrom", fields: [caseId], references: [id], onDelete: Cascade)
+  relatedCaseId String
+  relatedCase   CustomerCase @relation("RelationTo", fields: [relatedCaseId], references: [id], onDelete: Cascade)
+  status        String   @default("CONFIRMED") // CONFIRMED | REJECTED
+  explanation   String?
+  findingId     String?
+  confirmedById String?
+  createdAt     DateTime @default(now())
+
+  @@unique([caseId, relatedCaseId])
+}
+
+model LossAnalysis {
+  id          String   @id @default(cuid())
+  caseId      String   @unique
+  case        CustomerCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  agentReason String
+  agentNote   String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ExitConversation {
+  id            String    @id @default(cuid())
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  caseId        String?
+  tokenId       String?   @unique
+  status        String    @default("ACTIVE") // ACTIVE | COMPLETED | SKIPPED
+  messages      String    @default("[]") // JSON [{role, text, at}]
+  statedReasons String    @default("[]") // JSON: what the customer said, verbatim
+  summary       String? // JSON: analysis (AI hypotheses are kept separate from stated reasons)
+  summaryOrigin String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  consent ContactConsent?
+}
+
+model ContactConsent {
+  id                 String   @id @default(cuid())
+  customerId         String
+  customer           Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  exitConversationId String?  @unique
+  exitConversation   ExitConversation? @relation(fields: [exitConversationId], references: [id], onDelete: Cascade)
+  wantsUpdates       Boolean
+  createdAt          DateTime @default(now())
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  caseId     String?
+  case       CustomerCase? @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  actorType  String // USER | CUSTOMER | SYSTEM | AI
+  actorId    String?
+  actorName  String?
+  action     String
+  details    String   @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([caseId])
+}
+
+model AppSetting {
+  key   String @id
+  value String
+}
+
+/// External messaging channels (WhatsApp Business Cloud API, Telegram bot). One row per provider.
+model Integration {
+  provider    String    @id // WHATSAPP | TELEGRAM
+  enabled     Boolean   @default(false)
+  configJson  String    @default("{}") // provider credentials; stays on the server, masked in API responses
+  lastEventAt DateTime?
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+/// Messages received from an integration. They become case sources only after a person attaches them.
+model InboundMessage {
+  id              String    @id @default(cuid())
+  provider        String // WHATSAPP | TELEGRAM
+  externalId      String // provider message id (deduplication)
+  fromId          String // phone number or Telegram chat id
+  fromName        String?
+  text            String
+  receivedAt      DateTime
+  status          String    @default("NEW") // NEW | ATTACHED | IGNORED
+  suggestedCaseId String? // open case of the customer whose phone matches
+  caseId          String?
+  sourceId        String?
+  handledById     String?
+  createdAt       DateTime  @default(now())
+
+  @@unique([provider, externalId])
+  @@index([status])
+}
